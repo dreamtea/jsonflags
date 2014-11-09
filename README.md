@@ -1,18 +1,23 @@
 jsonflags
 =========
 
-A very simple Go package to read flags from a JSON object in addition to the command line. 
-Define your flags as normal using the built-in `flag` package and call `jsonflags.Parse()` 
+A very simple Go package to read flags from a JSON object. Define your flags as normal using 
+the built-in `flag` package, then call
+
+    jsonflags.Parse()
+
 instead of `flag.Parse()`.
 
-The application should define a flag called `"config"`, from which `jsonflags` will take the
-name of the JSON config file to read. The default value for this flag provides a path to a 
-config file load if the user does not provide a `-config` argument on the command line. In 
-the case that the default path is used, `jsonflags` will not return an error if the file 
-does not exist.
+The path of the JSON file to read is taken from a string flag called `"config"` which should 
+be defined by the application, like this:
 
-If the application does not define a `"config"` flag, `jsonflags.Parse()` behaves 
-identically to `flag.Parse()`.
+    flag.String("config", "config.json", "path to JSON config file")
 
-Arguments supplied on the command line override those defined by the JSON config, which in
-turn override the default values.
+If there is no `"config"` flag, `jsonflags.Parse()` behaves identically to `flag.Parse()`.
+
+If `"config"` has a non-empty default value, it specifies a file to load if the program is 
+not invoked with a `-config myconfig.json` argument. When this default path is used, 
+`jsonflags` does not return an error if the file is missing.
+
+Arguments supplied on the command line override those defined by the JSON config, which in 
+turn override the defaults.
