@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"log"
 	"os"
 	"strings"
 )
@@ -43,7 +44,7 @@ func (p *parser) getConfigPath() bool {
 func (p *parser) readJsonConfig() error {
 	configFile, err := os.Open(p.configPath)
 	if err != nil {
-		if err == os.ErrNotExist && !p.configMustExist {
+		if !p.configMustExist && os.IsNotExist(err) {
 			err = nil
 		}
 		return err
