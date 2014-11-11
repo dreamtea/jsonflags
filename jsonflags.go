@@ -2,10 +2,10 @@ package jsonflags
 
 import (
 	"encoding/json"
+	"errors"
 	"flag"
-	"fmt"
-	"log"
 	"os"
+	"strconv"
 	"strings"
 )
 
@@ -41,7 +41,33 @@ func (p *parser) getConfigPath() bool {
 	return false
 }
 
-func (p *parser) readJsonConfig() error {
+func convertToString(value interface{}) (string, error) {
+	switch value := value.(type) {
+	case nil:
+		return "", nil
+	case string:
+		return value, nil
+	case bool:
+		vs := strconv.FormatBool(value)
+		return vs, nil
+	case float64:
+		vs := strconv.FormatFloat(value, 'g', -1, 64)
+		return vs, nil
+	case []interface{}:
+		converted := make([]string, len(value))
+		for i, item := range value {
+			var err error
+			converted[i], err = convertToString(item)
+			if err != nil {
+				return "", err
+			}
+		}
+		return strings.Join(converted, ","), nil
+	}
+	return "", errors.New("Unsupported type in JSON config file.")
+}
+
+func (p *parser) readJSONConfig() error {
 	configFile, err := os.Open(p.configPath)
 	if err != nil {
 		if !p.configMustExist && os.IsNotExist(err) {
@@ -59,8 +85,11 @@ func (p *parser) readJsonConfig() error {
 	for key, value := range data {
 		key = strings.ToLower(key)
 		if !p.defined[key] {
-			valueAsString := fmt.Sprintf("%v", value)
-			err := p.flagSet.Set(key, valueAsString)
+			valueAsString, err := convertToString(value)
+			if err != nil {
+				return err
+			}
+			err = p.flagSet.Set(key, valueAsString)
 			if err != nil {
 				return err
 			}
@@ -80,7 +109,7 @@ func ParseFlagSet(flagSet *flag.FlagSet, args []string) error {
 	}
 	parser.getDefinedFlags()
 	if parser.getConfigPath() {
-		err = parser.readJsonConfig()
+		err = parser.readJSONConfig()
 	}
 	return err
 }

@@ -16,6 +16,7 @@ func TestJsonFlags(t *testing.T) {
 	flagSet.String("c", "c_default", "test flag C")
 	flagSet.Int("d", 123, "test flag D")
 	flagSet.Bool("e", true, "test flag E")
+	flagSet.String("f", "", "test flag F")
 
 	expected := map[string]interface{}{
 		"a": "a_value_from_arg",
@@ -23,6 +24,7 @@ func TestJsonFlags(t *testing.T) {
 		"c": "c_default",
 		"d": 456,
 		"e": false,
+		"f": "x,9.1,true",
 	}
 
 	err := ParseFlagSet(flagSet, args)
@@ -39,7 +41,7 @@ func TestJsonFlags(t *testing.T) {
 		}
 		actual := f.Value.(flag.Getter).Get()
 		if actual != value {
-			t.Errorf("Incorrect value for %s: expected: %v actual: %v", name, value, actual)
+			t.Fatalf("Incorrect value for %s: expected: %v actual: %v", name, value, actual)
 		}
 	}
 }

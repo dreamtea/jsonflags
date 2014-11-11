@@ -1,5 +1,6 @@
 {
 	"b": "b_value_from_json",
 	"d": 456,
-	"e": false
+	"e": false,
+	"f": ["x", 9.1, true]
 }
